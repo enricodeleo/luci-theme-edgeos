@@ -1,0 +1,89 @@
+{%
+	const boardinfo = ubus.call('system', 'board');
+	const menudata = ubus.call('luci', 'getMenu');
+%}
+<!DOCTYPE html>
+<html lang="{{ env.lang ?? 'en' }}" data-page="{{ request.path }}">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="theme-color" content="#16213e">
+	<title>{{ (boardinfo.hostname ?? '?') }} - LuCI</title>
+	<link rel="stylesheet" href="{{ resource }}/edgeos/cascade.css">
+	{{ ctx.script_header }}
+</head>
+<body class="lang_{{ env.lang ?? 'en' }}">
+	<div id="modal_overlay"></div>
+
+	<div id="topbar">
+		<div class="topbar-left">
+			<button id="sidebar-toggle" aria-label="Toggle menu">&#9776;</button>
+			<span class="hostname">{{ pcdata(boardinfo.hostname ?? '?') }}</span>
+		</div>
+		<div class="topbar-right">
+			<div id="indicators"></div>
+		</div>
+	</div>
+
+	<div id="sidebar" class="sidebar">
+		<div class="sidebar-brand">
+			<span class="brand-logo">&#9673;</span>
+			<span class="brand-name">{{ pcdata(boardinfo.hostname ?? 'OpenWrt') }}</span>
+		</div>
+		<nav class="sidebar-nav">
+{%
+			function render_menu(tree, level) {
+				if (!tree || !tree.children) return;
+
+				let children = tree.children();
+				for (let name, node in children) {
+					let is_active = node.active();
+					let has_children = node.children && length(node.children());
+
+					if (level == 0) {
+						let icon = '';
+						if (name == 'status') icon = '&#9679;';
+						else if (name == 'system') icon = '&#9881;';
+						else if (name == 'services') icon = '&#9733;';
+						else if (name == 'network') icon = '&#9784;';
+						else if (name == 'logout') icon = '&#10140;';
+						else icon = '&#9670;';
+%}
+						<a href="{{ node.url() }}" class="sidebar-item{{ is_active ? ' active' : '' }}{{ has_children ? ' has-sub' : '' }}">
+							<span class="sidebar-icon">{% write(icon) %}</span>
+							<span class="sidebar-label">{{ pcdata(node.title) }}</span>
+{%
+							if (has_children) {
+%}
+								<span class="sidebar-arrow">&#9656;</span>
+{%
+							}
+%}
+						</a>
+{%
+						if (has_children && is_active) {
+%}
+							<div class="sidebar-submenu">
+{%
+							for (let subname, subnode in node.children()) {
+								let sub_active = subnode.active();
+%}
+								<a href="{{ subnode.url() }}" class="sidebar-subitem{{ sub_active ? ' active' : '' }}">{{ pcdata(subnode.title) }}</a>
+{%
+							}
+%}
+							</div>
+{%
+						}
+					}
+				}
+			}
+
+			render_menu(menudata, 0);
+%}
+		</nav>
+	</div>
+
+	<div id="content-wrapper">
+		<div id="tabmenu"></div>
+		<div id="maincontent">

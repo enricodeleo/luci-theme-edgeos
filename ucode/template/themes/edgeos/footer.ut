@@ -1,0 +1,7 @@
+	</div>{# /maincontent #}
+</div>{# /content-wrapper #}
+
+<script src="{{ resource }}/edgeos/sidebar.js" defer></script>
+{{ ctx.script_footer }}
+</body>
+</html>

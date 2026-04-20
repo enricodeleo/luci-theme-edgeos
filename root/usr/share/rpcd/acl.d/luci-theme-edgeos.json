@@ -1,0 +1,10 @@
+{
+	"luci-theme-edgeos": {
+		"description": "EdgeOS theme permissions",
+		"read": {
+			"ubus": {
+				"luci": [ "getTheme" ]
+			}
+		}
+	}
+}
